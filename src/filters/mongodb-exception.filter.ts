@@ -1,7 +1,7 @@
 import { Catch, ExceptionFilter, HttpException, ArgumentsHost } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { MongoError } from 'mongodb';
-import { ApiErrorResponseDto } from '../dto/api-error-response.dto';
+import { ApiErrorResponseDto } from '../api-dtos/api-error-response.dto';
 import { Logger } from '../logger';
 
 @Catch(MongoError)
