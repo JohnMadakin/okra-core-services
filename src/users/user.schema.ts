@@ -20,10 +20,10 @@ export class User {
   @Prop({ required: true, select: false })
   password: string;
 
-  @Prop({ default: false })
+  @Prop({ default: false, select: false })
   isDeleted: boolean;
 
-  @Prop({ default: Date.now })
+  @Prop({ default: Date.now, index: true })
   createdAt: Date;
 
   @Prop({ default: Date.now })

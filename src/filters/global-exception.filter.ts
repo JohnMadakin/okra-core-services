@@ -32,7 +32,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     response.status(status).json({
       status: 'error',
-      success: false,
       code: status,
       errors: err,
       timestamp: new Date().toISOString(),
@@ -51,7 +50,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     } else {
       response.status(500).json({
         status: 'error',
-        success: false,
         code: 500,
         message: 'An error occured',
         errors: error['errors'] ? error['errors'] : error,
