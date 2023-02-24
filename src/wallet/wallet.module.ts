@@ -12,6 +12,7 @@ import { AuthModule } from 'src/auth/auth.module';
     UserModule, AuthModule
   ],
   controllers: [WalletController],
-  providers: [WalletService]
+  providers: [WalletService],
+  exports: [WalletService]
 })
 export class WalletModule {}

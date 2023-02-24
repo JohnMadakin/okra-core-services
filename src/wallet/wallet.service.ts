@@ -1,9 +1,9 @@
 import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Wallet, WalletDocument } from './wallet.schema';
-import { Model, ObjectId } from 'mongoose';
+import { ClientSession, Model, ObjectId, SessionOperation } from 'mongoose';
 import { CreateUserWalletDto } from './dto/create-wallet.dto';
-import { FundedWallet, Wallets } from 'src/global/types';
+import { FundedWallet, WalletFilter, Wallets } from 'src/global/types';
 import { FundWalletDto, CreateFundWalletDto } from './dto/wallet.dto';
 // import { UserService } from 'src/users/user.service';
 
@@ -70,12 +70,44 @@ export class WalletService {
     };
   }
 
-  async fund(fundWalletDto: CreateFundWalletDto): Promise<FundedWallet> {
+  async findWallet(walletId: string, currency?: string, owner?: string | null, session?: ClientSession ): Promise<Wallets | null> {
+    const fieldsToExclude = '-__v';
+    const filter: WalletFilter = currency ? { _id: walletId, currency, isDeleted: false } : { _id: walletId, isDeleted: false };
+
+    if(owner) filter.owner = owner;
+
+    const wallet = await this.walletModel.findOne(filter)
+    .select(fieldsToExclude).session(session)
+    .lean();
+
+    if(!wallet) return null;
+
+    const { _id, ...normalizedWallet } = wallet;
+    return {
+      id: _id,
+      ...normalizedWallet,
+    };
+  }
+
+  async fund(fundWalletDto: CreateFundWalletDto, session?: ClientSession | null): Promise<FundedWallet> {
     const fundWallet =  await this.walletModel.findOneAndUpdate({ 
       _id: fundWalletDto.wallet, owner: fundWalletDto.owner, currency: fundWalletDto.currency }, 
-      { $inc: { amount: fundWalletDto.amount } }, { new: true });
+      { $inc: { amount: fundWalletDto.amount } }, { new: true, session });
 
-    if(!fundWallet) throw new NotFoundException('wallet not found');
+    if(!fundWallet) throw new NotFoundException(`You have not created a(an) ${fundWalletDto.currency} wallet not found`);
+    return {
+      id: fundWallet._id,
+      amount: fundWallet.amount,
+      currency: fundWallet.currency,
+    }
+  }
+
+  async updateWallet(wallet: string, currency:string, amount: number, session: ClientSession): Promise<FundedWallet> {
+    const fundWallet =  await this.walletModel.findOneAndUpdate({ 
+      _id: wallet, currency }, 
+      { $inc: { amount } }, { new: true, session });
+
+    if(!fundWallet) return null;
     return {
       id: fundWallet._id,
       amount: fundWallet.amount,
