@@ -37,3 +37,8 @@ export interface Wallets {
     createdAt: Date;
     updatedAt: Date;
 }
+export interface FundedWallet {
+    id: string | ObjectId
+    amount: number;
+    currency: string;
+}

@@ -3,7 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Wallet, WalletDocument } from './wallet.schema';
 import { Model, ObjectId } from 'mongoose';
 import { CreateUserWalletDto } from './dto/create-wallet.dto';
-import { Wallets } from 'src/global/types';
+import { FundedWallet, Wallets } from 'src/global/types';
+import { FundWalletDto, CreateFundWalletDto } from './dto/wallet.dto';
 // import { UserService } from 'src/users/user.service';
 
 
@@ -67,6 +68,19 @@ export class WalletService {
       id: _id,
       ...normalizedWallet,
     };
+  }
+
+  async fund(fundWalletDto: CreateFundWalletDto): Promise<FundedWallet> {
+    const fundWallet =  await this.walletModel.findOneAndUpdate({ 
+      _id: fundWalletDto.wallet, owner: fundWalletDto.owner, currency: fundWalletDto.currency }, 
+      { $inc: { amount: fundWalletDto.amount } }, { new: true });
+
+    if(!fundWallet) throw new NotFoundException('wallet not found');
+    return {
+      id: fundWallet._id,
+      amount: fundWallet.amount,
+      currency: fundWallet.currency,
+    }
   }
 
 }
