@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Date, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
 import { User, UserDocument } from './user.schema';
@@ -12,7 +12,7 @@ export class UserService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {}
-  private readonly LIMIT: number = 4;
+  private readonly LIMIT: number = 10;
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
@@ -48,7 +48,7 @@ export class UserService {
       ...normalizedUsers,
     };
   }
-
+  
   async findAll(cursor?: string, limit?: number): Promise<PaginatedUsers> {
     const filter = cursor ? { createdAt: { $lt: new Date(cursor) }, isDeleted: false } : { isDeleted: false };
     const pageLimit = limit || this.LIMIT;

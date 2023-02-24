@@ -8,6 +8,7 @@ import { AppService } from './app.service';
 import { GlobalExceptionFilter } from './filters/global-exception.filter';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './users/user.module';
+import { WalletModule } from './wallet/wallet.module';
 
 @Module({
   imports: [
@@ -33,7 +34,7 @@ import { UserModule } from './users/user.module';
       }
     }),
     AuthModule, 
-    UserModule
+    UserModule, WalletModule
   ],
   controllers: [AppController],
   providers: [
