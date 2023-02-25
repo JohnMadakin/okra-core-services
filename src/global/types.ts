@@ -179,3 +179,23 @@ export enum RefundTypeEnum {
     PARTIAL = 'partial',
     FULL = 'full',
 }
+
+export interface VerifyPayments { 
+    id: string | ObjectId;
+    amount: number;
+    createdAt: Date;
+    status: string;
+}
+
+export interface VerifyPayments { 
+    id: string | ObjectId;
+    amount: number;
+    status: string;
+    createdAt: Date;
+}
+export interface VerifyRefunds { 
+    id: string | ObjectId;
+    amount: number;
+    status: string;
+    createdAt: Date;
+}

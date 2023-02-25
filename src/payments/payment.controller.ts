@@ -6,7 +6,7 @@ import { PrincipalGuard } from 'src/auth/principal.guard';
 import { NormalizedUser } from 'src/global/types';
 import { PaymentService } from './payment.service';
 import { PaymentResponseDto, PaymentsResponseDto } from './dto/payment-api.dto';
-import { IntiatePaymentDto, IntiateRefundDto, PaymentParamsDto, PaymentQueryDto } from './dto/payment.dto';
+import { IntiatePaymentDto, IntiateRefundDto, PaymentParamsDto, PaymentQueryDto, VerifyPaymentQueryDto } from './dto/payment.dto';
 
 @Controller('payments')
 export class PaymentController {
@@ -30,27 +30,6 @@ export class PaymentController {
       status: 'success',
       message: 'Payment initiated successfully',
       data: { payment: initiatedPayment },
-    }); 
-  }
-
-  @UseGuards(PrincipalGuard)
-  @Get(':id')
-  @UsePipes(ValidationPipe)
-  @ApiOperation({
-      summary: 'fetch a payment'
-  })
-  @ApiCreatedResponse({
-      status: HttpStatus.OK,
-      description: 'Payment fetched successfully',
-      type: PaymentResponseDto
-  })
-  async findOne(@Param() param: PaymentParamsDto, @CurrentUser() user: NormalizedUser, @Res() res: Response ) {
-    const wallet = await this.paymentService.findById(param.id, user.id as string);
-
-    return res.status(HttpStatus.OK).json({
-      status: 'success',
-      message: 'Wallet fetched',
-      data: wallet,
     }); 
   }
 
@@ -96,6 +75,48 @@ export class PaymentController {
     }); 
   }
 
+  @UseGuards(PrincipalGuard)
+  @Get('verify')
+  @UsePipes(ValidationPipe)
+  @ApiOperation({
+      summary: 'verify a payment'
+  })
+  @ApiCreatedResponse({
+      status: HttpStatus.OK,
+      description: 'Payment verified',
+      type: PaymentResponseDto
+  })
+  async verifyEntity(@Query() query: VerifyPaymentQueryDto, @CurrentUser() user: NormalizedUser, @Res() res: Response ) {
+    console.log('🏀');
+    const result = await this.paymentService.verify(query, user.id as string);
+    const data = query.paymentId ? { payments: result } : { refunds: result };
+    const message = query.paymentId ? 'Payments verified' : 'Refunds verified';
+    return res.status(HttpStatus.OK).json({
+      status: 'success',
+      message,
+      data,
+    }); 
+  }
 
+  @UseGuards(PrincipalGuard)
+  @Get(':id')
+  @UsePipes(ValidationPipe)
+  @ApiOperation({
+      summary: 'fetch a payment'
+  })
+  @ApiCreatedResponse({
+      status: HttpStatus.OK,
+      description: 'Payment fetched successfully',
+      type: PaymentResponseDto
+  })
+  async findOne(@Param() param: PaymentParamsDto, @CurrentUser() user: NormalizedUser, @Res() res: Response ) {
+    const wallet = await this.paymentService.findById(param.id, user.id as string);
+
+    return res.status(HttpStatus.OK).json({
+      status: 'success',
+      message: 'Wallet fetched',
+      data: wallet,
+    }); 
+  }
 
 }

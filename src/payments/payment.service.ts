@@ -7,7 +7,7 @@ import { CreatedPaymentDto, IntiatePaymentDto, PaymentDto } from './dto/Payment.
 import { WalletService } from 'src/wallet/wallet.service';
 import { DailyLedger, DailyLedgerDocument } from './daily-ledger.schema';
 import { getDateParts, roundNumber } from 'src/utils/utils';
-import { NormalizedPayment, PaymentEntry, NormalizedPaymentEntry, NormalizedPaymentResponse, UnNormalizedPayment, SingleNormalizedPayment, PaginatedNormalizedPayment, RefundStatusEnum, RefundTypeEnum } from 'src/global/types';
+import { NormalizedPayment, PaymentEntry, NormalizedPaymentEntry, NormalizedPaymentResponse, UnNormalizedPayment, SingleNormalizedPayment, PaginatedNormalizedPayment, RefundStatusEnum, RefundTypeEnum, VerifyPayments, VerifyRefunds } from 'src/global/types';
 import { Refund, RefundDocument } from './refunds.schema';
 import { ObjectId } from 'mongodb';
 import { RefundGuard, RefundGuardDocument } from './refund-guard.schema';
@@ -263,10 +263,43 @@ export class PaymentService {
     return dailyLedger;
   }
 
+  async verify(verifyObject: { paymentId: string, refundId: string }, owner: string): Promise<VerifyPayments | VerifyRefunds> {
+    const { paymentId, refundId } = verifyObject;
+    if(!paymentId && !refundId)
+      throw new NotAcceptableException('paymentId or refundId is required');
+    
+    if(paymentId){
+      const payments = await this.paymentModel.findOne({ _id: paymentId, owner, isDeleted: false }).lean();
+      if(!payments) {
+        throw new NotFoundException('Payment not found');
+      }
+      return { 
+        id: payments._id,
+        amount: payments.amount,
+        createdAt: payments.createdAt,
+        status: payments.status,
+      }
+    }
+
+    if(refundId) {
+      const refunds = await this.refundModel.findOne({ _id: refundId, owner, isDeleted: false });
+      if(!refunds) {
+        throw new NotFoundException('Refund not found');
+      }
+      return { 
+        id: refunds._id,
+        amount: refunds.amount,
+        createdAt: refunds.createdAt,
+        status: refunds.status,
+      }
+
+    }
+  }
+
   async refund(amount: number, owner: string, paymentId: string): Promise<Refund> {
     let refundGuardId: string = null;
     const globalRef = `REFUND-${randomBytes(15).toString('hex')}`.toUpperCase();
-    
+
     // Use to eliminate transaction write conflicts
     try {
       const refundGuard = new this.refundGuardModel({ paymentId });
