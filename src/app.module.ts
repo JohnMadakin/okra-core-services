@@ -9,6 +9,7 @@ import { GlobalExceptionFilter } from './filters/global-exception.filter';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './users/user.module';
 import { WalletModule } from './wallet/wallet.module';
+import { PaymentModule } from './payments/payment.module';
 
 @Module({
   imports: [
@@ -34,7 +35,7 @@ import { WalletModule } from './wallet/wallet.module';
       }
     }),
     AuthModule, 
-    UserModule, WalletModule
+    UserModule, WalletModule, PaymentModule
   ],
   controllers: [AppController],
   providers: [

@@ -2,15 +2,14 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { CurrencyEnum } from '../global/types';
 import { User } from 'src/users/user.schema';
-import { ObjectId } from 'mongodb';
 
 
-export type WalletDocument = Wallet & Document;
+export type DailyLedgerDocument = DailyLedger & Document;
 
 @Schema()
-export class Wallet {
+export class DailyLedger {
   @Prop({ auto: true, type: MongooseSchema.Types.ObjectId })
-  _id?: string;
+  _id: string
 
   @Prop({ 
     type: MongooseSchema.Types.ObjectId, 
@@ -23,10 +22,10 @@ export class Wallet {
   currency: string;
 
   @Prop({ default: 0 })
-  amount: number;
+  totalAmount: number;
 
-  @Prop({ required: true })
-  dailyLimit: number;
+  @Prop({ required: true, trim: true })
+  dayTs: string;
 
   @Prop({ default: false, select: false })
   isDeleted: boolean;
@@ -39,5 +38,5 @@ export class Wallet {
 }
 
 
-export const WalletSchema = SchemaFactory.createForClass(Wallet);
-WalletSchema.index({ owner: 1, currency: 1 }, { unique: true });
+export const DailyLedgerSchema = SchemaFactory.createForClass(DailyLedger);
+DailyLedgerSchema.index({ owner: 1, dayTs: 1 }, { unique: true });
