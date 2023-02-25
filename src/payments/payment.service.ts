@@ -60,7 +60,7 @@ export class PaymentService {
       const dailyLedger = await this.updateDailyLedger(walletToDebit, amount, session);
 
       // handles daily limits
-      if(dailyLedger.totalAmount >= dailyLedger.wallet.dailyLimit) 
+      if(dailyLedger.totalAmount > dailyLedger.wallet.dailyLimit) 
         throw new BadRequestException(`Wallet ${walletToDebit} has exceeded daily limit`);
 
       const [debitAction, creditAction] = await Promise.all([
@@ -364,7 +364,8 @@ export class PaymentService {
       if(!updatedDebitWallet) throw new NotFoundException('Wallet to credit is not currently available');
       
       await session.commitTransaction();
-      return savedRefund;
+      const { _id, __v, ...normalisedavedRefund} = savedRefund;
+      return { id: _id, ...normalisedavedRefund };
     } catch (error) {
       await session.abortTransaction();
       if(error.code === 11000) {

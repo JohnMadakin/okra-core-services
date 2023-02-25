@@ -61,7 +61,7 @@ export class CreatedPaymentDto {
 
 export class IntiatePaymentDto {
 	@IsNumber()
-	@Min(0)
+	@Min(1)
 	amount: number;
   
 	@IsIn(['NGN', 'USD'])

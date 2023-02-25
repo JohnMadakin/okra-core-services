@@ -2,7 +2,7 @@ import { IsMongoId } from 'class-validator';
 
 export class WalletQueryDto {
 
-	@IsMongoId()
+	@IsMongoId({ message: 'Invalid wallet id'})
 	id: string;
 }
 

@@ -88,7 +88,7 @@ export class WalletService {
       _id: fundWalletDto.wallet, owner: fundWalletDto.owner, currency: fundWalletDto.currency }, 
       { $inc: { amount: fundWalletDto.amount } }, { new: true, session });
 
-    if(!fundWallet) throw new NotFoundException(`You have not created a(an) ${fundWalletDto.currency} wallet not found`);
+    if(!fundWallet) throw new NotFoundException(`Not a valid ${fundWalletDto.currency}`);
     return {
       id: fundWallet._id,
       amount: fundWallet.amount,
