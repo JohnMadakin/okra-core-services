@@ -1,15 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { CurrencyEnum, MetaData, PaymentStatusEnum, PaymentTypeEnum } from '../global/types';
+import { CurrencyEnum, MetaData, RefundStatusEnum, RefundTypeEnum } from '../global/types';
 import { User } from 'src/users/user.schema';
 import { Wallet } from 'src/wallet/wallet.schema';
-import { Refund } from './refunds.schema';
+import { Payment } from './Payment.schema';
 
 
-export type PaymentDocument = Payment & Document;
+export type RefundDocument = Refund & Document;
 
 @Schema()
-export class Payment {
+export class Refund {
   @Prop({ auto: true, type: MongooseSchema.Types.ObjectId })
   _id?: string
 
@@ -26,7 +26,15 @@ export class Payment {
     auto: true,
     index: true,
   })
-  debitWallet: Wallet
+  debitedWallet: Wallet
+
+  @Prop({ 
+    type: MongooseSchema.Types.ObjectId, 
+    required: true, ref: Wallet.name, 
+    auto: true,
+    index: true,
+  })  
+  creditedWallet: Wallet;
 
   @Prop({ 
     type: MongooseSchema.Types.ObjectId, 
@@ -34,46 +42,20 @@ export class Payment {
     auto: true,
     index: true,
   })
-  creditWallet: Wallet
+  payment: Payment
 
-  @Prop({ 
-    type: MongooseSchema.Types.ObjectId, 
-    required: false, ref: Refund.name, 
-    auto: true,
-    // index: true,
-  })
-  refund?: Refund[]
-
-  @Prop({ required: true, trim: true })
+  @Prop({ required: true, trim: true, unique: true, index: true })
   ref: string;
 
-  @Prop({ required: true, trim: true, index: true })
-  providerRef: string;
-
-  @Prop({ required: true, trim: true, enum: PaymentTypeEnum })
+  @Prop({ required: true, trim: true, enum: RefundTypeEnum })
   type: string;
-
-  @Prop({ required: true, trim: true, enum: CurrencyEnum })
-  currency: string;
 
   @Prop({ default: 0 })
   amount: number;
 
-  @Prop({ default: 0 })
-  refundableAmount: number;
 
-  @Prop({ default: 0 })
-  balanceBefore: number;
-
-  @Prop({ default: 0 })
-  balanceAfter: number;
-
-  @Prop({ required: true, trim: true, enum: PaymentStatusEnum, default: PaymentStatusEnum.INITIATED })
+  @Prop({ required: true, trim: true, enum: RefundStatusEnum, default: RefundStatusEnum.INITIATED })
   status: string;
-
-
-  @Prop({ type: Object })
-  metaData: MetaData;
 
   @Prop({ default: false, select: false })
   isDeleted?: boolean;
@@ -86,6 +68,5 @@ export class Payment {
 }
 
 
-export const PaymentSchema = SchemaFactory.createForClass(Payment);
-PaymentSchema.index({ ref: 1, owner: 1 }, { unique: true });
+export const RefundSchema = SchemaFactory.createForClass(Refund);
 

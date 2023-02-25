@@ -6,7 +6,7 @@ import { PrincipalGuard } from 'src/auth/principal.guard';
 import { NormalizedUser } from 'src/global/types';
 import { PaymentService } from './payment.service';
 import { PaymentResponseDto, PaymentsResponseDto } from './dto/payment-api.dto';
-import { IntiatePaymentDto, PaymentParamsDto, PaymentQueryDto } from './dto/payment.dto';
+import { IntiatePaymentDto, IntiateRefundDto, PaymentParamsDto, PaymentQueryDto } from './dto/payment.dto';
 
 @Controller('payments')
 export class PaymentController {
@@ -72,6 +72,27 @@ export class PaymentController {
       status: 'success',
       message: 'Wallet fetched',
       data: wallet,
+    }); 
+  }
+
+  @UseGuards(PrincipalGuard)
+  @Post('refund')
+  @UsePipes(ValidationPipe)
+  @ApiOperation({
+      summary: 'refund a payment'
+  })
+  @ApiCreatedResponse({
+      status: HttpStatus.CREATED,
+      description: 'Payment initiated successfully',
+      type: PaymentResponseDto
+  })
+  async refund(@Body() initiateRefund: IntiateRefundDto, @CurrentUser() user: NormalizedUser, @Res() res: Response ) {
+    const initiatedRefund = await this.paymentService.refund(initiateRefund.amount, user.id as string, initiateRefund.payment);
+
+    return res.status(HttpStatus.CREATED).json({
+      status: 'success',
+      message: 'Refund initiated successfully',
+      data: initiatedRefund,
     }); 
   }
 

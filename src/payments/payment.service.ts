@@ -7,7 +7,10 @@ import { CreatedPaymentDto, IntiatePaymentDto, PaymentDto } from './dto/Payment.
 import { WalletService } from 'src/wallet/wallet.service';
 import { DailyLedger, DailyLedgerDocument } from './daily-ledger.schema';
 import { getDateParts, roundNumber } from 'src/utils/utils';
-import { NormalizedPayment, PaymentEntry, NormalizedPaymentEntry, NormalizedPaymentResponse, UnNormalizedPayment, SingleNormalizedPayment, PaginatedNormalizedPayment } from 'src/global/types';
+import { NormalizedPayment, PaymentEntry, NormalizedPaymentEntry, NormalizedPaymentResponse, UnNormalizedPayment, SingleNormalizedPayment, PaginatedNormalizedPayment, RefundStatusEnum, RefundTypeEnum } from 'src/global/types';
+import { Refund, RefundDocument } from './refunds.schema';
+import { ObjectId } from 'mongodb';
+import { RefundGuard, RefundGuardDocument } from './refund-guard.schema';
 
 
 @Injectable()
@@ -15,6 +18,8 @@ export class PaymentService {
   constructor(
     @InjectModel(Payment.name) private readonly paymentModel: Model<PaymentDocument>,
     @InjectModel(DailyLedger.name) private readonly dailyLedgerModel: Model<DailyLedgerDocument>,
+    @InjectModel(Refund.name) private readonly refundModel: Model<RefundDocument>,
+    @InjectModel(RefundGuard.name) private readonly refundGuardModel: Model<RefundGuardDocument>,
     private walletService: WalletService,
 
   ) {}
@@ -34,7 +39,7 @@ export class PaymentService {
 
       if(invalidRef) throw new BadRequestException(`${intiatePaymentDto.ref} is a duplicate reference`);
 
-      // refrain from using Promise.all() due to the use of mongodb transaction error 251
+      // refrain from using Promise.all() due to mongodb transaction error 251
       const creditWalletItems = await this.walletService.findWallet(walletToCredit, currency, null, session);
       const debitWalletItems = await this.walletService.findWallet(walletToDebit, currency, owner, session);
 
@@ -123,7 +128,7 @@ export class PaymentService {
   }
 
   normalizePaymentLedgerEntry(paymentEntry: PaymentEntry): NormalizedPaymentEntry[] {
-    const randbytes =  randomBytes(15).toString('hex');;
+    const randbytes =  randomBytes(15).toString('hex');
     const sessionId =  `000000000000000${randomBytes(20).toString('hex')}`;
     const { walletToCredit, walletToDebit, 
       currency,ref, debitOwner, creditOwner, 
@@ -257,4 +262,90 @@ export class PaymentService {
       { $inc: { totalAmount: amount } }, { new: true, upsert: true, session }).populate('wallet').exec();
     return dailyLedger;
   }
+
+  async refund(amount: number, owner: string, paymentId: string): Promise<Refund> {
+    let refundGuardId: string = null;
+    const globalRef = `REFUND-${randomBytes(15).toString('hex')}`.toUpperCase();
+    
+    // Use to eliminate transaction write conflicts
+    try {
+      const refundGuard = new this.refundGuardModel({ paymentId });
+      await refundGuard.save();
+      refundGuardId = refundGuard._id;
+    } catch (error) {
+      if(error.code === 11000) {
+        throw new 
+          ConflictException(`Unable to initiate refunds on this payment, try again later`);
+      }
+    }
+
+    const session = await this.paymentModel.db.startSession();
+    session.startTransaction();
+    try {
+      const payment = await this.paymentModel.findOne({ _id: paymentId }).populate('creditWallet').exec();
+
+      if(!payment) throw new NotFoundException('Payment not found.');
+
+      if(payment.creditWallet.owner.toString() !== owner.toString()) throw new UnauthorizedException(`You are not authorized to initiate this refund`);
+      if(amount > payment.amount) throw new BadRequestException('You cannot refund more than the initiated payment amount');
+      
+      //Help to ensure you dont refund more than you should
+      const [refundedAmount] = await this.refundModel.aggregate([
+        { $match: { payment: payment._id, isDeleted: false } },
+        { $group: { _id: '$payment', totalAmount: { $sum: '$amount' } } },
+        { $project: { _id: 0, totalAmount: 1 } }
+      ]).exec();
+
+      const totalRefundableAmount = (refundedAmount?.totalAmount || 0) + amount;
+
+      if(totalRefundableAmount > payment.amount) 
+        throw new BadRequestException('total refundable amount is greater than payment amount');
+      
+      const creditWalletBalance = payment.creditWallet.amount;
+
+      const balance = roundNumber(creditWalletBalance - amount, 2);
+
+      if(balance < 0) throw new BadRequestException('No enough wallet funds to initiate refund');
+
+      let typeOfRefund = amount < payment.amount  ? RefundTypeEnum.PARTIAL: RefundTypeEnum.FULL;
+       typeOfRefund = totalRefundableAmount === payment.amount ? RefundTypeEnum.FULL : typeOfRefund;
+
+      const refundObject = {
+        creditedWallet: payment.debitWallet._id, // reversal
+        debitedWallet: payment.creditWallet._id, // reversal
+        status: RefundStatusEnum.COMPLETED,
+        amount,
+        type: typeOfRefund,
+        ref: globalRef,
+        payment: payment,
+        owner,
+      };
+
+      const refund = new this.refundModel(refundObject);
+      const updatedCreditWallet = await this.walletService.updateWallet(payment.creditWallet._id, payment.currency, -amount, session);
+      const updatedDebitWallet = await this.walletService.updateWallet(payment.debitWallet._id, payment.currency, amount, session);
+      const savedRefund = await refund.save({ session });
+
+      if(!updatedCreditWallet) throw new NotFoundException('Wallet to debit is not currently available');
+      if(!updatedDebitWallet) throw new NotFoundException('Wallet to credit is not currently available');
+      
+      await session.commitTransaction();
+      return savedRefund;
+    } catch (error) {
+      await session.abortTransaction();
+      if(error.code === 11000) {
+        throw new ConflictException(`duplicate reference`);
+      } else if(error.code === 112) {
+        throw new
+          ConflictException(`Unable to initiate refunds on this payment, try again later`);
+      }
+
+      throw error;
+    } finally {
+      await this.refundGuardModel.findByIdAndUpdate(refundGuardId, { paymentId: `${paymentId}-${globalRef}-completed`});
+      session.endSession();
+    }
+
+  }
+
 }
