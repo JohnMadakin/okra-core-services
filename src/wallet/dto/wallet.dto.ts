@@ -19,3 +19,35 @@ export class WalletDto {
 	_id: string;
 }
 
+export class FundWalletDto {
+	@IsNumber()
+	@Min(1)
+	amount: number;
+  
+	@IsIn(['NGN', 'USD'])
+	currency: string;
+  
+	// @IsMongoId()
+	// owner?: string;
+
+	@IsMongoId({
+		message: 'Invalid wallet format'
+	})
+	wallet: string;
+}
+
+export class CreateFundWalletDto {
+	@IsNumber()
+	@Min(1)
+	amount: number;
+  
+	@IsIn(['NGN', 'USD'])
+	currency: string;
+  
+	@IsMongoId()
+	owner?: string;
+
+	@IsMongoId()
+	wallet: string;
+}
+
