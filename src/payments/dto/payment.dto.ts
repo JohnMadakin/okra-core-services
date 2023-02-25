@@ -12,9 +12,6 @@ export class PaymentDto {
 	@IsMongoId()
 	owner: string;
 
-	// @IsString()
-	// status: string;
-
 	@IsMongoId()
 	walletToDebit: string;
 
@@ -28,9 +25,6 @@ export class PaymentDto {
 	@Min(5)
 	@Max(50)
 	ref: string;
-
-	// @IsMongoId()
-	// _id: string;
 }
 
 export class CreatedPaymentDto {
@@ -63,9 +57,6 @@ export class CreatedPaymentDto {
 	@Min(5)
 	@Max(50)
 	ref: string;
-
-	// @IsMongoId()
-	// _id: string;
 }
 
 export class IntiatePaymentDto {
@@ -95,6 +86,18 @@ export class IntiatePaymentDto {
 export class PaymentParamsDto {
 	@IsMongoId()
 	id: string;
+}
+
+export class VerifyPaymentQueryDto {
+	@IsOptional()
+	@IsMongoId({ message: 'Please enter a valid refundId'})
+	refundId: string;
+
+	@IsOptional()
+	@IsMongoId({
+		message: 'Kindly enter a valid paymentId'
+	})
+	paymentId: string;
 }
 
 export class PaymentQueryDto {
