@@ -29,6 +29,13 @@ export enum PaymentStatusEnum {
     FAILED = 'failed',
 }
 
+export enum RefundStatusEnum {
+    COMPLETED = 'completed',
+    INITIATED = 'initiated',
+    PENDING = 'pending',
+    FAILED = 'failed',
+}
+
 export interface AuthUser {
     id: string
     firstName: string;
@@ -166,4 +173,9 @@ export interface PaginatedNormalizedPayment {
     nextCursor: string | null;
     previousCursor: string | null;
     hasNextPage: boolean;
+}
+
+export enum RefundTypeEnum {
+    PARTIAL = 'partial',
+    FULL = 'full',
 }

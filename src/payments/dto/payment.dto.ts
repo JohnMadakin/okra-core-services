@@ -110,3 +110,12 @@ export class PaymentQueryDto {
 	@IsNumber()
 	limit: number;
 }
+
+export class IntiateRefundDto {
+	@IsNumber()
+	@Min(1)
+	amount: number;
+  
+	@IsMongoId({ message: 'Invalid payment Id'})
+	payment: string;
+}

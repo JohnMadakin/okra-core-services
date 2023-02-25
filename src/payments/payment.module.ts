@@ -7,11 +7,17 @@ import { DailyLedger, DailyLedgerSchema } from './daily-ledger.schema';
 import { WalletModule } from 'src/wallet/wallet.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { UserModule } from 'src/users/user.module';
+import { Refund, RefundSchema } from './refunds.schema';
+import { RefundGuard, RefundGuardSchema } from './refund-guard.schema';
 
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Payment.name, schema: PaymentSchema }, { name: DailyLedger.name, schema: DailyLedgerSchema }]),
+    MongooseModule.forFeature([{ name: Payment.name, schema: PaymentSchema }, 
+      { name: DailyLedger.name, schema: DailyLedgerSchema },
+      { name: Refund.name, schema: RefundSchema },
+      { name: RefundGuard.name, schema: RefundGuardSchema }
+    ]),
     WalletModule, AuthModule, UserModule
   ],
   controllers: [PaymentController],
