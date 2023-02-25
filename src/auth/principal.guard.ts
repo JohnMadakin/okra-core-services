@@ -1,18 +1,18 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ServiceUnavailableException, BadRequestException } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../users/user.service';
+import { AuthService } from './auth.service';
 
 @Injectable()
 export class PrincipalGuard implements CanActivate {
   constructor(
-    private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private readonly authService: AuthService,
   ) {}
 
-  canActivate(
+  async canActivate(
     context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  ):  Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
 
@@ -21,9 +21,11 @@ export class PrincipalGuard implements CanActivate {
     }
 
     const token = authHeader.split(' ')[1];
-    const decodedToken = this.jwtService.verify(token);
+    const decodedToken = this.authService.verifyJwt(token);
+    
+    if(!decodedToken) throw new BadRequestException('invalid token entered');
 
-    const user = this.userService.findOneById(decodedToken.userId);
+    const user = await this.userService.findOneById(decodedToken.id);
 
     if (!user) {
       return false;

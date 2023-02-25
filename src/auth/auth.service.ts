@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from 'src/users/user.service';
@@ -13,15 +13,17 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
+  private logger = new Logger(AuthService.name);
+  private readonly JWT: string = 'JWT_SECRET';
 
-  async login(loginUserDto: LoginUserDto): Promise<{ access_token: string }> {
+  async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string }> {
     const user = await this.validateUser(loginUserDto.email, loginUserDto.password);
 
     const payload = { id: user._id };    
     return {
-        access_token: this.jwtService.sign(
+        accessToken: this.jwtService.sign(
             payload, 
-            { secret: this.configService.get<string>('JWT_SECRET') }
+            { secret: this.configService.get<string>(this.JWT) }
         ),
     };
   }
@@ -37,5 +39,17 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
     return user;
+  }
+
+  verifyJwt(token: string) {
+    const jwtSecret = this.configService.get(this.JWT);
+
+    try {
+        return this.jwtService.verify(token, { secret: jwtSecret});
+
+    } catch (e) {
+      this.logger.warn(e);
+      return null;
+    }
   }
 }
