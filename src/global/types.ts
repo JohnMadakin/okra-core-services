@@ -45,6 +45,7 @@ export interface Wallets {
     dailyLimit: number;  
     createdAt: Date;
     updatedAt: Date;
+    owner: User;
 }
 export interface FundedWallet {
     id: string | ObjectId;
@@ -70,28 +71,32 @@ export enum PaymentTypeEnum {
 }
 
 export interface NormalizedPaymentEntry {
-    walletToCredit: string;
-    walletToDebit: string;
-    currency: string;
+    owner: string;
+    debitWallet: string;
+    creditWallet: string;
     ref: string;
-    debitOwner: string | ObjectId;
-    creditOwner: string | ObjectId;
+    providerRef: string;
+    type: string;
+    currency: string;
     amount: number;
-    newCreditBalnce: number;
-    newDebitBalnce: number;
-    oldCreditBalnce: number;
-    oldDebitBalnce: number;
-    meta: MetaData;
+    balanceBefore: number;
+    balanceAfter: number;
+    status: string;
+    metaData: MetaData;
+    isDeleted?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+
 }
 
 export interface NormalizedPaymentResponse {
     id: string | ObjectId;
-    creditWallet: Wallet | null;
-    debitWallet: Wallet | null;
+    creditWallet: string | null;
+    debitWallet: string | null;
     currency: string;
     ref: string;
     providerRef: string;
-    owner: User | null;
+    owner: string | ObjectId;
     amount: number;
     status: string,
     metadata: MetaData;
@@ -121,5 +126,44 @@ export interface NormalizedPayment {
     owner: string | ObjectId;
     amount: number;
     status: string,
+    type: string,
     meta: MetaData;
+}
+
+export interface PaymentEntry {
+    walletToCredit: string;
+    walletToDebit: string;
+    currency: string;
+    ref: string;
+    debitOwner: string;
+    creditOwner: string;
+    amount: number;
+    newCreditBalnce: number;
+    newDebitBalnce: number;
+    oldCreditBalnce: number;
+    oldDebitBalnce: number;
+    meta: MetaData;
+}
+
+export interface SingleNormalizedPayment {
+    id?: string;
+    creditWallet: Wallet;
+    debitWallet: Wallet;
+    currency: string;
+    ref: string;
+    providerRef: string;
+    owner: User;
+    amount: number;
+    status: string,
+    metaData: MetaData;
+    balanceBefore: number;
+    balanceAfter: number;
+    createdAt?: Date;
+}
+
+export interface PaginatedNormalizedPayment {
+    payments: SingleNormalizedPayment[];
+    nextCursor: string | null;
+    previousCursor: string | null;
+    hasNextPage: boolean;
 }

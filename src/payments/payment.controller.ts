@@ -5,8 +5,8 @@ import { CurrentUser } from '../users/current-user.decorator';
 import { PrincipalGuard } from 'src/auth/principal.guard';
 import { NormalizedUser } from 'src/global/types';
 import { PaymentService } from './payment.service';
-import { PaymentResponseDto } from './dto/payment-api.dto';
-import { IntiatePaymentDto } from './dto/payment.dto';
+import { PaymentResponseDto, PaymentsResponseDto } from './dto/payment-api.dto';
+import { IntiatePaymentDto, PaymentParamsDto, PaymentQueryDto } from './dto/payment.dto';
 
 @Controller('payments')
 export class PaymentController {
@@ -32,5 +32,49 @@ export class PaymentController {
       data: { payment: initiatedPayment },
     }); 
   }
+
+  @UseGuards(PrincipalGuard)
+  @Get(':id')
+  @UsePipes(ValidationPipe)
+  @ApiOperation({
+      summary: 'fetch a payment'
+  })
+  @ApiCreatedResponse({
+      status: HttpStatus.OK,
+      description: 'Payment fetched successfully',
+      type: PaymentResponseDto
+  })
+  async findOne(@Param() param: PaymentParamsDto, @CurrentUser() user: NormalizedUser, @Res() res: Response ) {
+    const wallet = await this.paymentService.findById(param.id, user.id as string);
+
+    return res.status(HttpStatus.OK).json({
+      status: 'success',
+      message: 'Wallet fetched',
+      data: wallet,
+    }); 
+  }
+
+  @UseGuards(PrincipalGuard)
+  @Get('')
+  @UsePipes(ValidationPipe)
+  @ApiOperation({
+      summary: 'fetch all payment'
+  })
+  @ApiCreatedResponse({
+      status: HttpStatus.OK,
+      description: 'Payments fetched successfully',
+      type: PaymentsResponseDto
+  })
+  async findAll(@Query() query: PaymentQueryDto, @CurrentUser() user: NormalizedUser, @Res() res: Response ) {
+    const wallet = await this.paymentService.findAll(user.id as string, query.nextCursor, query.previousCursor, query.limit);
+
+    return res.status(HttpStatus.OK).json({
+      status: 'success',
+      message: 'Wallet fetched',
+      data: wallet,
+    }); 
+  }
+
+
 
 }

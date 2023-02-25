@@ -34,12 +34,12 @@ export class UserService {
   }
 
   async findByEmail(email: string, options: { select?: string }): Promise<User | null> {
-    const user = await this.userModel.findOne({ email }).select(options.select || '').exec();
+    const user = await this.userModel.findOne({ email, isDeleted: false }).select(options.select || '').exec();
     return user || null;
   }
 
   async findOneById(id: string): Promise<NormalizedUser> {
-    const user = await this.userModel.findById(id).lean();
+    const user = await this.userModel.findOne({ _id: id, isDeleted: false }).lean();
 
     if(!user) throw new NotFoundException('User not found');
     const { _id,__v, ...normalizedUsers } = user;

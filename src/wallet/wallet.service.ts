@@ -70,7 +70,7 @@ export class WalletService {
     };
   }
 
-  async findWallet(walletId: string, currency?: string, owner?: string | null, session?: ClientSession ): Promise<Wallets | null> {
+  async findWallet(walletId: string, currency?: string, owner?: string | null, session?: ClientSession ): Promise<Wallet | null> {
     const fieldsToExclude = '-__v';
     const filter: WalletFilter = currency ? { _id: walletId, currency, isDeleted: false } : { _id: walletId, isDeleted: false };
 
@@ -81,12 +81,7 @@ export class WalletService {
     .lean();
 
     if(!wallet) return null;
-
-    const { _id, ...normalizedWallet } = wallet;
-    return {
-      id: _id,
-      ...normalizedWallet,
-    };
+    return wallet
   }
 
   async fund(fundWalletDto: CreateFundWalletDto, session?: ClientSession | null): Promise<FundedWallet> {

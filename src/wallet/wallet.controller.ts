@@ -63,7 +63,7 @@ export class WalletController {
       summary: 'fetch a wallet'
   })
   @ApiCreatedResponse({
-      status: HttpStatus.CREATED,
+      status: HttpStatus.OK,
       description: 'Wallets fetched successfully',
       type: WalletsResponseDto
   })

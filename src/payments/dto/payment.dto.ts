@@ -1,6 +1,5 @@
 import { IsIn, IsMongoId, IsNumber, Min, IsObject, IsString, IsAlphanumeric, Max, IsOptional, MinLength, MaxLength } from 'class-validator';
 import { ObjectId } from 'mongoose';
-import { MetaData } from 'src/global/types';
 
 export class PaymentDto {
 	@IsNumber()
@@ -93,21 +92,21 @@ export class IntiatePaymentDto {
 	ref: string;
 }
 
-export interface Payment {
-  _id?: string;
-  owner: string | ObjectId;
-  debitWallet: string | ObjectId;
-  creditWallet: string | ObjectId;
-  ref: string;
-  providerRef: string;
-  type: string;
-  currency: string;
-  amount: number;
-  balanceBefore: number;
-  balanceAfter: number;
-  status: string;
-  metaData: MetaData;
-  isDeleted?: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
+export class PaymentParamsDto {
+	@IsMongoId()
+	id: string;
+}
+
+export class PaymentQueryDto {
+	@IsMongoId()
+	@IsOptional()
+	nextCursor: string;
+
+	@IsMongoId()
+	@IsOptional()
+	previousCursor: string;
+
+	@IsOptional()
+	@IsNumber()
+	limit: number;
 }

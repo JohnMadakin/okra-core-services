@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { CurrencyEnum } from '../global/types';
 import { User } from 'src/users/user.schema';
+import { ObjectId } from 'mongodb';
 
 
 export type WalletDocument = Wallet & Document;
@@ -9,7 +10,7 @@ export type WalletDocument = Wallet & Document;
 @Schema()
 export class Wallet {
   @Prop({ auto: true, type: MongooseSchema.Types.ObjectId })
-  _id: string
+  _id?: string;
 
   @Prop({ 
     type: MongooseSchema.Types.ObjectId, 

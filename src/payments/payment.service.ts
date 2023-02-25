@@ -3,11 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { randomBytes } from 'crypto';
 import { Payment, PaymentDocument } from './Payment.schema';
 import { ClientSession, Model } from 'mongoose';
-import { CreatedPaymentDto, IntiatePaymentDto, PaymentDto, Payment as PaymentEntry } from './dto/Payment.dto';
+import { CreatedPaymentDto, IntiatePaymentDto, PaymentDto } from './dto/Payment.dto';
 import { WalletService } from 'src/wallet/wallet.service';
 import { DailyLedger, DailyLedgerDocument } from './daily-ledger.schema';
 import { getDateParts, roundNumber } from 'src/utils/utils';
-import { NormalizedPayment, NormalizedPaymentEntry, NormalizedPaymentResponse, UnNormalizedPayment } from 'src/global/types';
+import { NormalizedPayment, PaymentEntry, NormalizedPaymentEntry, NormalizedPaymentResponse, UnNormalizedPayment, SingleNormalizedPayment, PaginatedNormalizedPayment } from 'src/global/types';
 
 
 @Injectable()
@@ -19,6 +19,7 @@ export class PaymentService {
 
   ) {}
   private readonly today = getDateParts(new Date());
+  private readonly LIMIT: number = 10;
 
   async initiate(intiatePaymentDto: PaymentDto): Promise<NormalizedPaymentResponse | void> {
     const session = await this.paymentModel.db.startSession();
@@ -67,11 +68,12 @@ export class PaymentService {
       if(!creditAction) 
         throw new InternalServerErrorException('Error occured while funding target wallet');
 
-      const paymentEntry = { walletToCredit, walletToDebit, 
-        currency,ref, debitOwner: debitWalletItems.id, creditOwner: creditWalletItems.id, 
+      const paymentEntry = {
+         walletToCredit: creditWalletItems._id, walletToDebit: debitWalletItems._id, 
+        currency,ref, debitOwner: debitWalletItems.owner as any, creditOwner: creditWalletItems.owner as any, 
         amount, newCreditBalnce: creditBalance, newDebitBalnce: debitBalance, 
         oldCreditBalnce: creditWalletItems.amount , oldDebitBalnce: debitWalletItems.amount, meta: metaData
-      }
+      };
       const normalizedPaymentEntry = this.normalizePaymentLedgerEntry(paymentEntry);
       const payments = await this.createPaymentLedger(normalizedPaymentEntry, session);
       // Commit the transaction
@@ -106,12 +108,12 @@ export class PaymentService {
     payments.forEach(payment => {
       if (payment.type === 'debit') {
         result.id = payment._id;
-        result.creditWallet = payment.creditWallet;
-        result.debitWallet = payment.debitWallet;
+        result.creditWallet = payment.creditWallet as any;
+        result.debitWallet = payment.debitWallet as any;
         result.currency = payment.currency;
         result.ref = payment.ref;
         result.providerRef = payment.providerRef;
-        result.owner = payment.owner;
+        result.owner = payment.owner as any;
         result.amount = payment.amount;
         result.status = payment.status;
         result.metadata = payment.metaData;
@@ -120,7 +122,7 @@ export class PaymentService {
     return result;
   }
 
-  normalizePaymentLedgerEntry(paymentEntry:  NormalizedPaymentEntry): PaymentEntry[] {
+  normalizePaymentLedgerEntry(paymentEntry: PaymentEntry): NormalizedPaymentEntry[] {
     const randbytes =  randomBytes(15).toString('hex');;
     const sessionId =  `000000000000000${randomBytes(20).toString('hex')}`;
     const { walletToCredit, walletToDebit, 
@@ -182,6 +184,71 @@ export class PaymentService {
 
   async findOne(ref: string, owner: string, session: ClientSession): Promise<Payment> {
     return this.paymentModel.findOne({ ref, owner }).session(session).exec();
+  }
+
+  async findById(id: string, owner: string): Promise<SingleNormalizedPayment> {
+    const payment = await this.paymentModel.findOne({ _id: id, owner }).lean();
+
+    if(!payment) throw new NotFoundException('Payment id not found');
+    const { __v, _id, type, isDeleted, updatedAt,...normalizedPayment } = payment;
+    return {
+      id: _id,
+      ...normalizedPayment,
+    };
+  }
+
+  // Todu: rework
+  async findAll(owner: string, nextCursor: string, previousCursor: string, limit: number): Promise<PaginatedNormalizedPayment | { payments: [] }> {
+    const query: { _id?: object, owner: string, nextCursor?: string | null, previousCursor?: string | null } = { owner };
+    const sort = { _id: -1 }
+    if (previousCursor) {
+      query._id = { $gt: previousCursor }
+      sort._id = 1
+    } else if (nextCursor) {
+      query._id = { $lt: nextCursor }
+    }
+
+    const payments = await this.paymentModel.find(query)
+    .sort({ _id: previousCursor ? 1 : -1 })
+    .limit(limit || this.LIMIT)
+    .lean();
+
+    if(!payments.length) return { payments: payments as [], nextCursor: null, previousCursor: null };
+    if (query.previousCursor) payments.reverse();
+
+    let hasNext, hasPrev, lastItem, firstItem;
+    lastItem = payments[payments.length - 1]._id
+    firstItem = payments[0]._id
+  
+    // If there is an item with id less than last item (remember, sort is in desc _id), there is a next page
+    const q = { _id: { $lt: lastItem } }
+    const r =  await this.paymentModel.findOne(q);
+    if (r) {
+      hasNext = true
+    }
+    // If there is an item with id greater than first item (remember, sort is in desc _id), there is a previous page
+    hasPrev = !!await this.paymentModel.findOne({ _id: { $gt: firstItem }});
+
+    const response: PaginatedNormalizedPayment = {
+      payments,
+      nextCursor: '',
+      previousCursor: '',
+      hasNextPage: hasNext,
+    }
+    if (hasNext) {
+      response.nextCursor = `${lastItem}`
+    }
+    if (hasPrev) {
+      response.previousCursor = `${firstItem}`
+    }    
+    response.payments = payments.map(payment => {
+    const { __v, _id, type, isDeleted, updatedAt,...normalizedPayment } = payment;
+    return {
+      id: _id,
+      ...normalizedPayment,
+      }
+    });
+    return response;
   }
 
   async updateDailyLedger(wallet: string, amount: number, session: ClientSession): Promise<DailyLedger> {
