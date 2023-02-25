@@ -32,7 +32,6 @@ export class PrincipalGuard implements CanActivate {
     }
 
     request.user = user;
-
     return true;
   }
 }
