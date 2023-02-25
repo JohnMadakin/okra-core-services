@@ -2,11 +2,12 @@ import { Body, Controller, Get, HttpStatus, Param, Post, Query, Req, Res, UseGua
 import { ApiCreatedResponse, ApiOperation } from '@nestjs/swagger';
 import { Response } from 'express';
 import { CurrentUser } from '../users/current-user.decorator';
-import { PrincipalGuard } from 'src/auth/principal.guard';
-import { NormalizedUser } from 'src/global/types';
-import { PaymentService } from './payment.service';
-import { PaymentResponseDto, PaymentsResponseDto } from './dto/payment-api.dto';
-import { IntiatePaymentDto, IntiateRefundDto, PaymentParamsDto, PaymentQueryDto, VerifyPaymentQueryDto } from './dto/payment.dto';
+import { PrincipalGuard } from '../auth/principal.guard';
+import { NormalizedUser } from '../global/types';
+import { PaymentService } from '../payments/payment.service';
+import { PaymentResponseDto, PaymentsResponseDto } from '../payments/dto/payment-api.dto';
+import { IntiatePaymentDto, IntiateRefundDto, PaymentParamsDto, 
+  PaymentQueryDto, VerifyPaymentQueryDto } from '../payments/dto/payment.dto';
 
 @Controller('payments')
 export class PaymentController {

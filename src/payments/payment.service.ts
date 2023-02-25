@@ -1,16 +1,17 @@
 import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { randomBytes } from 'crypto';
-import { Payment, PaymentDocument } from './Payment.schema';
+import { Payment, PaymentDocument } from '../payments/payment.schema';
 import { ClientSession, Model } from 'mongoose';
-import { CreatedPaymentDto, IntiatePaymentDto, PaymentDto } from './dto/Payment.dto';
-import { WalletService } from 'src/wallet/wallet.service';
-import { DailyLedger, DailyLedgerDocument } from './daily-ledger.schema';
-import { getDateParts, roundNumber } from 'src/utils/utils';
-import { NormalizedPayment, PaymentEntry, NormalizedPaymentEntry, NormalizedPaymentResponse, UnNormalizedPayment, SingleNormalizedPayment, PaginatedNormalizedPayment, RefundStatusEnum, RefundTypeEnum, VerifyPayments, VerifyRefunds } from 'src/global/types';
-import { Refund, RefundDocument } from './refunds.schema';
-import { ObjectId } from 'mongodb';
-import { RefundGuard, RefundGuardDocument } from './refund-guard.schema';
+import { CreatedPaymentDto, PaymentDto } from '../payments/dto/payment.dto';
+import { WalletService } from '../wallet/wallet.service';
+import { DailyLedger, DailyLedgerDocument } from '../payments/daily-ledger.schema';
+import { getDateParts, roundNumber } from '../utils/utils';
+import { PaymentEntry, NormalizedPaymentEntry, NormalizedPaymentResponse, 
+  SingleNormalizedPayment, PaginatedNormalizedPayment, 
+  RefundStatusEnum, RefundTypeEnum, VerifyPayments, VerifyRefunds } from '../global/types';
+import { Refund, RefundDocument } from '../payments/refunds.schema';
+import { RefundGuard, RefundGuardDocument } from '../payments/refund-guard.schema';
 
 
 @Injectable()

@@ -1,14 +1,14 @@
 import { Body, Controller, Get, HttpStatus, Param, Post, Query, Req, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
-import { WalletService } from './wallet.service';
+import { WalletService } from '../wallet/wallet.service';
 import { ApiCreatedResponse, ApiOperation } from '@nestjs/swagger';
-import { WalletResponseDto, WalletsResponseDto } from './dto/wallet-api.dto';
-import { CreateWalletDto } from './dto/create-wallet.dto';
+import { WalletResponseDto, WalletsResponseDto } from '../wallet/dto/wallet-api.dto';
+import { CreateWalletDto } from '../wallet/dto/create-wallet.dto';
 import { Response } from 'express';
 import { CurrentUser } from '../users/current-user.decorator';
-import { PrincipalGuard } from 'src/auth/principal.guard';
-import { NormalizedUser } from 'src/global/types';
-import { WalletQueryDto } from './dto/wallet-query.dto';
-import { FundWalletDto } from './dto/wallet.dto';
+import { PrincipalGuard } from '../auth/principal.guard';
+import { NormalizedUser } from '../global/types';
+import { WalletQueryDto } from '../wallet/dto/wallet-query.dto';
+import { FundWalletDto } from '../wallet/dto/wallet.dto';
 
 
 @Controller('wallets')

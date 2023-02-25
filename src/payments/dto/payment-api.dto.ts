@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ApiResponseDto } from "src/api-dtos/api-response.dto";
-import { PaymentDto, IntiatePaymentDto } from "./payment.dto";
+import { ApiResponseDto } from "../../api-dtos/api-response.dto";
+import { PaymentDto, IntiatePaymentDto } from "../../payments/dto/payment.dto";
 
 
 export class PaymentResponseData {

@@ -1,7 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, ServiceUnavailableException, BadRequestException } from '@nestjs/common';
-import { Observable } from 'rxjs';
 import { UserService } from '../users/user.service';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class PrincipalGuard implements CanActivate {

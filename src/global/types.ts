@@ -1,6 +1,6 @@
 import { ObjectId } from "mongoose";
-import { User } from "src/users/user.schema";
-import { Wallet } from "src/wallet/wallet.schema";
+import { User } from "../users/user.schema";
+import { Wallet } from "../wallet/wallet.schema";
 
 export interface NormalizedUser {
     id: string | ObjectId;

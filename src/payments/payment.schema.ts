@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { CurrencyEnum, MetaData, PaymentStatusEnum, PaymentTypeEnum } from '../global/types';
-import { User } from 'src/users/user.schema';
-import { Wallet } from 'src/wallet/wallet.schema';
-import { Refund } from './refunds.schema';
+import { User } from '../users/user.schema';
+import { Wallet } from '../wallet/wallet.schema';
+import { Refund } from'../payments/refunds.schema';
 
 
 export type PaymentDocument = Payment & Document;

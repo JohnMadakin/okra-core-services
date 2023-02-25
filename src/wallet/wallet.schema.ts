@@ -1,8 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { CurrencyEnum } from '../global/types';
-import { User } from 'src/users/user.schema';
-import { ObjectId } from 'mongodb';
+import { User } from '../users/user.schema';
 
 
 export type WalletDocument = Wallet & Document;

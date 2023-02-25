@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { CurrencyEnum, MetaData, RefundStatusEnum, RefundTypeEnum } from '../global/types';
-import { User } from 'src/users/user.schema';
-import { Wallet } from 'src/wallet/wallet.schema';
-import { Payment } from './Payment.schema';
+import {  RefundStatusEnum, RefundTypeEnum } from '../global/types';
+import { User } from '../users/user.schema';
+import { Wallet } from '../wallet/wallet.schema';
+import { Payment } from '../payments/payment.schema';
 
 
 export type RefundDocument = Refund & Document;

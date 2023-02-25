@@ -5,6 +5,9 @@
   "author": "Edafe",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": "14.20.1"
+  },
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",

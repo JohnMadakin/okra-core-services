@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { Wallet } from 'src/wallet/wallet.schema';
+import { Wallet } from '../wallet/wallet.schema';
 
 
 export type DailyLedgerDocument = DailyLedger & Document;

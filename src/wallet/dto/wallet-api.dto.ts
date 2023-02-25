@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ApiResponseDto } from "src/api-dtos/api-response.dto";
-import { WalletDto, FundWalletDto } from "./wallet.dto";
+import { ApiResponseDto } from "../../api-dtos/api-response.dto";
+import { WalletDto, FundWalletDto } from "../../wallet/dto/wallet.dto";
 
 
 export class WalletResponseData {

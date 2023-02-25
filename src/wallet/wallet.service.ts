@@ -1,11 +1,10 @@
 import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Wallet, WalletDocument } from './wallet.schema';
-import { ClientSession, Model, ObjectId, SessionOperation } from 'mongoose';
-import { CreateUserWalletDto } from './dto/create-wallet.dto';
-import { FundedWallet, WalletFilter, Wallets } from 'src/global/types';
-import { FundWalletDto, CreateFundWalletDto } from './dto/wallet.dto';
-// import { UserService } from 'src/users/user.service';
+import { Wallet, WalletDocument } from '../wallet/wallet.schema';
+import { ClientSession, Model, ObjectId } from 'mongoose';
+import { CreateUserWalletDto } from '../wallet/dto/create-wallet.dto';
+import { FundedWallet, WalletFilter, Wallets } from '../global/types';
+import { CreateFundWalletDto } from '../wallet/dto/wallet.dto';
 
 
 @Injectable()

@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Post, UseGuards, UsePipes, ValidationPipe, Res, HttpStatus, Param, Query } from '@nestjs/common';
 import { Response } from 'express';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { UserService } from '../users/user.service';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 import { ApiCreatedResponse, ApiOperation } from '@nestjs/swagger';
-import { PrincipalGuard } from 'src/auth/principal.guard';
-import { UserResponseDto, UsersResponseDto } from './dto/user-api.dto';
-import { UserQueryDto } from './dto/user-query.dto';
+import { PrincipalGuard } from '../auth/principal.guard';
+import { UserResponseDto, UsersResponseDto } from '../users/dto/user-api.dto';
+import { UserQueryDto } from '../users/dto/user-query.dto';
 
 @Controller('users')
 export class UserController {

@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-import { PaymentController } from './payment.controller';
-import { PaymentService } from './payment.service';
+import { PaymentController } from '../payments/payment.controller';
+import { PaymentService } from '../payments/payment.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Payment, PaymentSchema } from './Payment.schema';
-import { DailyLedger, DailyLedgerSchema } from './daily-ledger.schema';
-import { WalletModule } from 'src/wallet/wallet.module';
-import { AuthModule } from 'src/auth/auth.module';
-import { UserModule } from 'src/users/user.module';
-import { Refund, RefundSchema } from './refunds.schema';
-import { RefundGuard, RefundGuardSchema } from './refund-guard.schema';
+import { Payment, PaymentSchema } from '../payments/payment.schema';
+import { DailyLedger, DailyLedgerSchema } from '../payments/daily-ledger.schema';
+import { WalletModule } from '../wallet/wallet.module';
+import { AuthModule } from '../auth/auth.module';
+import { UserModule } from '../users/user.module';
+import { Refund, RefundSchema } from '../payments/refunds.schema';
+import { RefundGuard, RefundGuardSchema } from '../payments/refund-guard.schema';
 
 
 @Module({
